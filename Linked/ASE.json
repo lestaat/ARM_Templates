@@ -1,0 +1,62 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "AppsServiceEnviromentDetails": {
+            "type": "object"
+        },
+        "tags": {
+            "type": "object",
+            "metadata": {
+                "description": "Tags for this resources"
+            }
+        },
+        "sslCertKeyVaultId": {
+            "type": "string",
+            "defaultValue": "NotSet"
+        },
+        "sslCertKeyVaultSecretName": {
+            "type": "string",
+            "defaultValue": "NotSet"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "name": "[parameters('AppsServiceEnviromentDetails').AppsServiceEnviromentName]",
+            "type": "Microsoft.Web/hostingEnvironments",
+            "apiVersion": "2018-02-01",
+            "kind": "[parameters('AppsServiceEnviromentDetails').AppsServiceEnviromentKind]",
+            "location": "[parameters('AppsServiceEnviromentDetails').Location]",
+            "tags": "[parameters('tags')]",
+            "properties": {
+                "name": "[parameters('AppsServiceEnviromentDetails').AppsServiceEnviromentName]",
+                "location": "[parameters('AppsServiceEnviromentDetails').Location]",
+                "VirtualNetwork": {
+                    "Id": "[parameters('AppsServiceEnviromentDetails').AppsServiceEnviromentVnetId]",
+                    "type": "Microsoft.Network/virtualNetworks",
+                    "Subnet": "[parameters('AppsServiceEnviromentDetails').AppsServiceEnviromentSubnetName]"
+                },
+                "internalLoadBalancingMode": "Web",
+                "clusterSettings": [
+                    {
+                        "name": "DisableTls1.0",
+                        "value": "1"
+                    },
+                    {
+                        "name": "DisableTls1.1",
+                        "value": "1"
+                    }
+                ],
+                "sslCertKeyVaultId": "[if(equals(parameters('sslCertKeyVaultId'),'NotSet'),json('null'),parameters('sslCertKeyVaultId'))]",
+                "sslCertKeyVaultSecretName": "[if(equals(parameters('sslCertKeyVaultSecretName'),'NotSet'),json('null'),parameters('sslCertKeyVaultSecretName'))]"
+            }
+        }
+    ],
+    "outputs": {
+        "result": {
+            "value": "[reference(parameters('AppsServiceEnviromentDetails').AppsServiceEnviromentName, '2018-02-01', 'Full')]",
+            "type": "object"
+        }
+    }
+}
